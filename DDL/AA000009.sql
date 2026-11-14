@@ -1,0 +1,129 @@
+-- Create participants table in ctf database.
+
+-- Set SQLID
+   SET CURRENT SQLID='{{SQLID}}';
+
+-- Create participants tablespace
+   CREATE TABLESPACE {{PARTICIPANTS_TBSNAME}}
+                       IN {{DBNAME}}
+                       USING STOGROUP {{STOGROUP}}
+                       PRIQTY 40 SECQTY 40
+                       ERASE  NO
+                       FREEPAGE 0 PCTFREE 5 FOR UPDATE 0
+                       GBPCACHE CHANGED
+                       TRACKMOD YES
+                       MAXPARTITIONS 254
+                       LOGGED
+                       DSSIZE 4 G
+                       SEGSIZE 4
+                       BUFFERPOOL BP0
+                       LOCKSIZE ANY
+                       LOCKMAX SYSTEM
+                       CLOSE YES
+                       COMPRESS NO
+                       CCSID      UNICODE
+                       DEFINE YES
+                       MAXROWS 255
+                       INSERT ALGORITHM 0;
+
+-- Create participants table
+   CREATE TABLE {{SCHEMA}}.{{PARTICIPANTS_TBNAME}}
+      (EVENTID     INTEGER NOT NULL,
+       PLAYERID    INTEGER NOT NULL,
+       TEAMID      INTEGER,
+       PARTSTATUS  GRAPHIC(1) NOT NULL,
+       CREATEDBY   GRAPHIC(8) NOT NULL,
+       CREATEDDATE TIMESTAMP NOT NULL,
+       UPDATEDBY   GRAPHIC(8) NOT NULL,
+       UPDATEDDATE TIMESTAMP NOT NULL,
+       CONSTRAINT PARTICIPANKEY
+       PRIMARY KEY (EVENTID,
+                    PLAYERID))
+      IN {{DBNAME}}.{{PARTICIPANTS_TBSNAME}}
+      PARTITION BY SIZE
+      AUDIT NONE
+      DATA CAPTURE NONE
+      CCSID      UNICODE
+      NOT VOLATILE
+      APPEND NO;
+
+-- Create participants index for primary key
+   CREATE UNIQUE INDEX {{SCHEMA}}.{{PARTICIPANTS_IXNAME1}}
+      ON {{SCHEMA}}.{{PARTICIPANTS_TBNAME}}
+      (EVENTID  ASC,
+       PLAYERID ASC)
+     USING STOGROUP {{STOGROUP}}
+     PRIQTY -1 SECQTY -1
+     ERASE  NO
+     FREEPAGE 0 PCTFREE 10
+     GBPCACHE CHANGED
+     NOT CLUSTER
+     COMPRESS NO
+     INCLUDE NULL KEYS
+     BUFFERPOOL BP0
+     CLOSE NO
+     COPY NO
+     DEFER NO
+     DEFINE YES
+     PIECESIZE 2 G;
+
+-- Create participants index on PLAYERID
+   CREATE INDEX {{SCHEMA}}.{{PARTICIPANTS_IXNAME2}}
+      ON {{SCHEMA}}.{{PARTICIPANTS_TBNAME}}
+      (PLAYERID ASC)
+     USING STOGROUP {{STOGROUP}}
+     PRIQTY -1 SECQTY -1
+     ERASE  NO
+     FREEPAGE 0 PCTFREE 10
+     GBPCACHE CHANGED
+     NOT CLUSTER
+     COMPRESS NO
+     INCLUDE NULL KEYS
+     BUFFERPOOL BP0
+     CLOSE NO
+     COPY NO
+     DEFER NO
+     DEFINE YES
+     PIECESIZE 2 G;
+
+-- Create participants index on TEAMID
+   CREATE INDEX {{SCHEMA}}.{{PARTICIPANTS_IXNAME3}}
+      ON {{SCHEMA}}.{{PARTICIPANTS_TBNAME}}
+      (TEAMID ASC)
+     USING STOGROUP {{STOGROUP}}
+     PRIQTY -1 SECQTY -1
+     ERASE  NO
+     FREEPAGE 0 PCTFREE 10
+     GBPCACHE CHANGED
+     NOT CLUSTER
+     COMPRESS NO
+     INCLUDE NULL KEYS
+     BUFFERPOOL BP0
+     CLOSE NO
+     COPY NO
+     DEFER NO
+     DEFINE YES
+     PIECESIZE 2 G;
+
+-- Create foreign key on EVENTID
+   ALTER TABLE {{SCHEMA}}.{{PARTICIPANTS_TBNAME}}
+     FOREIGN KEY PARTIC_FK1 (EVENTID)
+     REFERENCES {{SCHEMA}}.{{EVENTS_TBNAME}}
+       (EVENTID)
+     ON DELETE RESTRICT ENFORCED;
+
+-- Create foreign key on PLAYERID
+   ALTER TABLE {{SCHEMA}}.{{PARTICIPANTS_TBNAME}}
+     FOREIGN KEY PARTIC_FK2 (PLAYERID)
+     REFERENCES {{SCHEMA}}.{{PLAYERS_TBNAME}}
+       (PLAYERID)
+     ON DELETE RESTRICT ENFORCED;
+
+-- Create foreign key on TEAMID
+   ALTER TABLE {{SCHEMA}}.{{PARTICIPANTS_TBNAME}}
+     FOREIGN KEY PARTIC_FK3 (TEAMID)
+     REFERENCES {{SCHEMA}}.{{TEAMS_TBNAME}}
+       (TEAMID)
+     ON DELETE RESTRICT ENFORCED;
+
+   COMMIT;

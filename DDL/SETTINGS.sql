@@ -1,0 +1,67 @@
+-- Every SETTINGS entry the programs read (CTFM910, CTFM930), from
+-- envs/<env>.yaml. Replaces the settings of SEEDDATA, AA000023,
+-- AA000024 and AA000026. Can be run again at any time, after AA000004:
+-- it deletes all SETTINGS entries first, so values changed on the admin
+-- Settings page go back to those of envs/<env>.yaml. CTFM001 checks the
+-- same lengths when they are changed there.
+
+-- Set SQLID
+   SET CURRENT SQLID='{{SQLID}}';
+
+   DELETE FROM {{SCHEMA}}.{{REFTABLES_TBNAME}}
+     WHERE TABLEID='SETTINGS';
+
+-- BATCHUSR: Userid the provisioning jobs run under
+   INSERT INTO {{SCHEMA}}.{{REFTABLES_TBNAME}}
+     VALUES('SETTINGS','BATCHUSR','{{BATCHUSER}}',
+            'SEED',CURRENT TIMESTAMP,'SEED',CURRENT TIMESTAMP);
+-- PLAYGRP: Default group of every player userid
+   INSERT INTO {{SCHEMA}}.{{REFTABLES_TBNAME}}
+     VALUES('SETTINGS','PLAYGRP','{{PLAYERGROUP}}',
+            'SEED',CURRENT TIMESTAMP,'SEED',CURRENT TIMESTAMP);
+-- JOBCLASS: Job class of the provisioning jobs
+   INSERT INTO {{SCHEMA}}.{{REFTABLES_TBNAME}}
+     VALUES('SETTINGS','JOBCLASS','{{JOBCLASS}}',
+            'SEED',CURRENT TIMESTAMP,'SEED',CURRENT TIMESTAMP);
+-- MSGCLASS: Message class of the provisioning jobs
+   INSERT INTO {{SCHEMA}}.{{REFTABLES_TBNAME}}
+     VALUES('SETTINGS','MSGCLASS','{{JOBMSGCLASS}}',
+            'SEED',CURRENT TIMESTAMP,'SEED',CURRENT TIMESTAMP);
+-- DB2SSID: DB2 subsystem of the result step
+   INSERT INTO {{SCHEMA}}.{{REFTABLES_TBNAME}}
+     VALUES('SETTINGS','DB2SSID','{{DB2SSID}}',
+            'SEED',CURRENT TIMESTAMP,'SEED',CURRENT TIMESTAMP);
+-- DB2HLQ: DB2 libraries (SDSNLOAD)
+   INSERT INTO {{SCHEMA}}.{{REFTABLES_TBNAME}}
+     VALUES('SETTINGS','DB2HLQ','{{DB2HLQ}}',
+            'SEED',CURRENT TIMESTAMP,'SEED',CURRENT TIMESTAMP);
+-- DB2SSHLQ: DB2 subsystem libraries (SDSNEXIT)
+   INSERT INTO {{SCHEMA}}.{{REFTABLES_TBNAME}}
+     VALUES('SETTINGS','DB2SSHLQ','{{DB2SSHLQ}}',
+            'SEED',CURRENT TIMESTAMP,'SEED',CURRENT TIMESTAMP);
+-- CTFPLAN: Plan of CTFM915 in the result step
+   INSERT INTO {{SCHEMA}}.{{REFTABLES_TBNAME}}
+     VALUES('SETTINGS','CTFPLAN','{{DB2PLAN}}',
+            'SEED',CURRENT TIMESTAMP,'SEED',CURRENT TIMESTAMP);
+-- LOADLIB: Load library of CTFM915
+   INSERT INTO {{SCHEMA}}.{{REFTABLES_TBNAME}}
+     VALUES('SETTINGS','LOADLIB','{{LOADLIB}}',
+            'SEED',CURRENT TIMESTAMP,'SEED',CURRENT TIMESTAMP);
+-- CLAIMHRS: Hours a claim token stays valid (number)
+   INSERT INTO {{SCHEMA}}.{{REFTABLES_TBNAME}}
+     VALUES('SETTINGS','CLAIMHRS','{{CLAIMHOURS}}',
+            'SEED',CURRENT TIMESTAMP,'SEED',CURRENT TIMESTAMP);
+-- SUBMUSR: Userid of the task that submits the jobs
+   INSERT INTO {{SCHEMA}}.{{REFTABLES_TBNAME}}
+     VALUES('SETTINGS','SUBMUSR','{{SUBMITUSER}}',
+            'SEED',CURRENT TIMESTAMP,'SEED',CURRENT TIMESTAMP);
+-- SUBMTXN: CICS transaction of that task
+   INSERT INTO {{SCHEMA}}.{{REFTABLES_TBNAME}}
+     VALUES('SETTINGS','SUBMTXN','{{CICSTXN_SUBMIT}}',
+            'SEED',CURRENT TIMESTAMP,'SEED',CURRENT TIMESTAMP);
+-- JOBMINS: Minutes after which a job counts as stuck
+   INSERT INTO {{SCHEMA}}.{{REFTABLES_TBNAME}}
+     VALUES('SETTINGS','JOBMINS','{{JOBMINUTES}}',
+            'SEED',CURRENT TIMESTAMP,'SEED',CURRENT TIMESTAMP);
+
+   COMMIT;

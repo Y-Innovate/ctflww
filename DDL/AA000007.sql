@@ -1,0 +1,132 @@
+-- Create provjobs table in ctf database.
+
+-- Set SQLID
+   SET CURRENT SQLID='{{SQLID}}';
+
+-- Create provjobs tablespace
+   CREATE TABLESPACE {{PROVJOBS_TBSNAME}}
+                       IN {{DBNAME}}
+                       USING STOGROUP {{STOGROUP}}
+                       PRIQTY 40 SECQTY 40
+                       ERASE  NO
+                       FREEPAGE 0 PCTFREE 5 FOR UPDATE 0
+                       GBPCACHE CHANGED
+                       TRACKMOD YES
+                       MAXPARTITIONS 254
+                       LOGGED
+                       DSSIZE 4 G
+                       SEGSIZE 4
+                       BUFFERPOOL BP0
+                       LOCKSIZE ANY
+                       LOCKMAX SYSTEM
+                       CLOSE YES
+                       COMPRESS NO
+                       CCSID      UNICODE
+                       DEFINE YES
+                       MAXROWS 255
+                       INSERT ALGORITHM 0;
+
+-- Create provjobs table
+   CREATE TABLE {{SCHEMA}}.{{PROVJOBS_TBNAME}}
+      (PROVJOBID     INTEGER NOT NULL GENERATED ALWAYS
+          AS IDENTITY
+             (START WITH 1, INCREMENT BY 1, CACHE 20, NO CYCLE,
+              NO ORDER, MAXVALUE 2147483647, MINVALUE 1),
+       PLAYERID      INTEGER NOT NULL,
+       EVENTID       INTEGER,
+       PROVACTION    GRAPHIC(1) NOT NULL,
+       RACFGROUP     GRAPHIC(8),
+       JOBSTATUS     GRAPHIC(1) NOT NULL,
+       JESJOBID      GRAPHIC(8),
+       SUBMITTEDDATE TIMESTAMP,
+       COMPLETEDDATE TIMESTAMP,
+       JOBRC         SMALLINT,
+       JOBMESSAGE    VARGRAPHIC(72),
+       RETRYCOUNT    SMALLINT NOT NULL,
+       CREATEDBY     GRAPHIC(8) NOT NULL,
+       CREATEDDATE   TIMESTAMP NOT NULL,
+       UPDATEDBY     GRAPHIC(8) NOT NULL,
+       UPDATEDDATE   TIMESTAMP NOT NULL,
+       CONSTRAINT PROVJOBSKEY
+       PRIMARY KEY (PROVJOBID))
+      IN {{DBNAME}}.{{PROVJOBS_TBSNAME}}
+      PARTITION BY SIZE
+      AUDIT NONE
+      DATA CAPTURE NONE
+      CCSID      UNICODE
+      NOT VOLATILE
+      APPEND NO;
+
+-- Create provjobs index for primary key
+   CREATE UNIQUE INDEX {{SCHEMA}}.{{PROVJOBS_IXNAME1}}
+      ON {{SCHEMA}}.{{PROVJOBS_TBNAME}}
+      (PROVJOBID ASC)
+     USING STOGROUP {{STOGROUP}}
+     PRIQTY -1 SECQTY -1
+     ERASE  NO
+     FREEPAGE 0 PCTFREE 10
+     GBPCACHE CHANGED
+     NOT CLUSTER
+     COMPRESS NO
+     INCLUDE NULL KEYS
+     BUFFERPOOL BP0
+     CLOSE NO
+     COPY NO
+     DEFER NO
+     DEFINE YES
+     PIECESIZE 2 G;
+
+-- Create provjobs index on PLAYERID
+   CREATE INDEX {{SCHEMA}}.{{PROVJOBS_IXNAME2}}
+      ON {{SCHEMA}}.{{PROVJOBS_TBNAME}}
+      (PLAYERID ASC)
+     USING STOGROUP {{STOGROUP}}
+     PRIQTY -1 SECQTY -1
+     ERASE  NO
+     FREEPAGE 0 PCTFREE 10
+     GBPCACHE CHANGED
+     NOT CLUSTER
+     COMPRESS NO
+     INCLUDE NULL KEYS
+     BUFFERPOOL BP0
+     CLOSE NO
+     COPY NO
+     DEFER NO
+     DEFINE YES
+     PIECESIZE 2 G;
+
+-- Create provjobs index on JOBSTATUS, CREATEDDATE
+   CREATE INDEX {{SCHEMA}}.{{PROVJOBS_IXNAME3}}
+      ON {{SCHEMA}}.{{PROVJOBS_TBNAME}}
+      (JOBSTATUS   ASC,
+       CREATEDDATE ASC)
+     USING STOGROUP {{STOGROUP}}
+     PRIQTY -1 SECQTY -1
+     ERASE  NO
+     FREEPAGE 0 PCTFREE 10
+     GBPCACHE CHANGED
+     NOT CLUSTER
+     COMPRESS NO
+     INCLUDE NULL KEYS
+     BUFFERPOOL BP0
+     CLOSE NO
+     COPY NO
+     DEFER NO
+     DEFINE YES
+     PIECESIZE 2 G;
+
+-- Create foreign key on PLAYERID
+   ALTER TABLE {{SCHEMA}}.{{PROVJOBS_TBNAME}}
+     FOREIGN KEY PROVJO_FK1 (PLAYERID)
+     REFERENCES {{SCHEMA}}.{{PLAYERS_TBNAME}}
+       (PLAYERID)
+     ON DELETE RESTRICT ENFORCED;
+
+-- Create foreign key on EVENTID
+   ALTER TABLE {{SCHEMA}}.{{PROVJOBS_TBNAME}}
+     FOREIGN KEY PROVJO_FK2 (EVENTID)
+     REFERENCES {{SCHEMA}}.{{EVENTS_TBNAME}}
+       (EVENTID)
+     ON DELETE RESTRICT ENFORCED;
+
+   COMMIT;

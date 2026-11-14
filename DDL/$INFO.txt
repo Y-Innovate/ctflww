@@ -1,0 +1,40 @@
+Member   Who When YMD Description
+-------- --- -------- --------------------------------------------------
+AA000001 BTK 26-11-03 Grant permission for CREATESG,CREATEDBA, use of
+                      bufferpools and execute on packages.
+AA000002 BTK 26-11-03 Create storage group for ctf database
+AA000003 BTK 26-11-03 Create ctf database
+AA000004 BTK 26-11-03 00 Create reftables     table
+AA000005 BTK 26-11-03 00 Create events        table
+AA000006 BTK 26-11-03 00 Create players       table
+AA000007 BTK 26-11-03 00 Create provjobs      table
+AA000008 BTK 26-11-03 00 Create teams         table
+AA000009 BTK 26-11-03 00 Create participants  table
+AA000010 BTK 26-11-03 00 Create challenges    table
+AA000011 BTK 26-11-03 00 Create flags         table
+AA000012 BTK 26-11-03 00 Create hints         table
+AA000013 BTK 26-11-03 00 Create challlinks    table
+AA000014 BTK 26-11-03 00 Create eventchall    table
+AA000015 BTK 26-11-03 00 Create prereqs       table
+AA000016 BTK 26-11-03 00 Create submissions   table
+AA000017 BTK 26-11-03 00 Create solves        table
+AA000018 BTK 26-11-03 00 Create hintunlocks   table
+AA000019 BTK 26-11-03 00 Create awards        table
+AA000020 BTK 26-11-03 00 Create announcements table
+AA000021 BTK 26-11-03 00 Removed: DB2 access is given in JCL/RACF.jcl
+SEEDDATA BTK 26-11-03 Settings, categories and a demo event
+AA000022 BTK 26-11-03 00 Rename TITLE columns, reserved word in COBOL
+AA000023 BTK 26-11-04 00 Settings for the job submission task
+AA000024 BTK 26-11-04 00 Settings for CTFM915 in the provisioning jobs
+AA000025 BTK 26-11-07 00 Seed data for iteration 2: team event, hints,
+                      links and announcements
+AA000026 BTK 26-11-07 00 PROVJOBS.JOBHASH, setting JOBMINS
+AA000027 BTK 26-11-07 00 Seed data for iteration 3: events with a RACF
+                      group, one of them ended
+AA000028 BTK 26-11-11 00 Userid sequence: maximum of the environment's
+                      range (PLAYERS_SEQ_MAX); safe with players
+AA000029 BTK 26-11-11 00 Userid sequence: restart at the environment's
+                      range; ONLY without players (new environment)
+SETTINGS BTK 26-11-11 00 Every SETTINGS entry in one member, rerunnable;
+                      replaces the settings of SEEDDATA, AA000026 and
+                      the removed AA000023 and AA000024

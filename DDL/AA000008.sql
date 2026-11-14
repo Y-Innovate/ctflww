@@ -1,0 +1,147 @@
+-- Create teams table in ctf database.
+
+-- Set SQLID
+   SET CURRENT SQLID='{{SQLID}}';
+
+-- Create teams tablespace
+   CREATE TABLESPACE {{TEAMS_TBSNAME}}
+                       IN {{DBNAME}}
+                       USING STOGROUP {{STOGROUP}}
+                       PRIQTY 40 SECQTY 40
+                       ERASE  NO
+                       FREEPAGE 0 PCTFREE 5 FOR UPDATE 0
+                       GBPCACHE CHANGED
+                       TRACKMOD YES
+                       MAXPARTITIONS 254
+                       LOGGED
+                       DSSIZE 4 G
+                       SEGSIZE 4
+                       BUFFERPOOL BP0
+                       LOCKSIZE ANY
+                       LOCKMAX SYSTEM
+                       CLOSE YES
+                       COMPRESS NO
+                       CCSID      UNICODE
+                       DEFINE YES
+                       MAXROWS 255
+                       INSERT ALGORITHM 0;
+
+-- Create teams table
+   CREATE TABLE {{SCHEMA}}.{{TEAMS_TBNAME}}
+      (TEAMID      INTEGER NOT NULL GENERATED ALWAYS
+          AS IDENTITY
+             (START WITH 1, INCREMENT BY 1, CACHE 20, NO CYCLE,
+              NO ORDER, MAXVALUE 2147483647, MINVALUE 1),
+       EVENTID     INTEGER NOT NULL,
+       TEAMNAME    VARGRAPHIC(30) NOT NULL,
+       TEAMKEY     VARGRAPHIC(30) NOT NULL,
+       JOINCODE    GRAPHIC(12) NOT NULL,
+       CAPTAINID   INTEGER NOT NULL,
+       MEMBERCOUNT SMALLINT NOT NULL,
+       CREATEDBY   GRAPHIC(8) NOT NULL,
+       CREATEDDATE TIMESTAMP NOT NULL,
+       UPDATEDBY   GRAPHIC(8) NOT NULL,
+       UPDATEDDATE TIMESTAMP NOT NULL,
+       CONSTRAINT TEAMSKEY
+       PRIMARY KEY (TEAMID))
+      IN {{DBNAME}}.{{TEAMS_TBSNAME}}
+      PARTITION BY SIZE
+      AUDIT NONE
+      DATA CAPTURE NONE
+      CCSID      UNICODE
+      NOT VOLATILE
+      APPEND NO;
+
+-- Create teams index for primary key
+   CREATE UNIQUE INDEX {{SCHEMA}}.{{TEAMS_IXNAME1}}
+      ON {{SCHEMA}}.{{TEAMS_TBNAME}}
+      (TEAMID ASC)
+     USING STOGROUP {{STOGROUP}}
+     PRIQTY -1 SECQTY -1
+     ERASE  NO
+     FREEPAGE 0 PCTFREE 10
+     GBPCACHE CHANGED
+     NOT CLUSTER
+     COMPRESS NO
+     INCLUDE NULL KEYS
+     BUFFERPOOL BP0
+     CLOSE NO
+     COPY NO
+     DEFER NO
+     DEFINE YES
+     PIECESIZE 2 G;
+
+-- Create teams index on EVENTID, TEAMKEY
+   CREATE UNIQUE INDEX {{SCHEMA}}.{{TEAMS_IXNAME2}}
+      ON {{SCHEMA}}.{{TEAMS_TBNAME}}
+      (EVENTID ASC,
+       TEAMKEY ASC)
+     USING STOGROUP {{STOGROUP}}
+     PRIQTY -1 SECQTY -1
+     ERASE  NO
+     FREEPAGE 0 PCTFREE 10
+     GBPCACHE CHANGED
+     NOT CLUSTER
+     COMPRESS NO
+     INCLUDE NULL KEYS
+     BUFFERPOOL BP0
+     CLOSE NO
+     COPY NO
+     DEFER NO
+     DEFINE YES
+     PIECESIZE 2 G;
+
+-- Create teams index on EVENTID, JOINCODE
+   CREATE UNIQUE INDEX {{SCHEMA}}.{{TEAMS_IXNAME3}}
+      ON {{SCHEMA}}.{{TEAMS_TBNAME}}
+      (EVENTID  ASC,
+       JOINCODE ASC)
+     USING STOGROUP {{STOGROUP}}
+     PRIQTY -1 SECQTY -1
+     ERASE  NO
+     FREEPAGE 0 PCTFREE 10
+     GBPCACHE CHANGED
+     NOT CLUSTER
+     COMPRESS NO
+     INCLUDE NULL KEYS
+     BUFFERPOOL BP0
+     CLOSE NO
+     COPY NO
+     DEFER NO
+     DEFINE YES
+     PIECESIZE 2 G;
+
+-- Create teams index on CAPTAINID
+   CREATE INDEX {{SCHEMA}}.{{TEAMS_IXNAME4}}
+      ON {{SCHEMA}}.{{TEAMS_TBNAME}}
+      (CAPTAINID ASC)
+     USING STOGROUP {{STOGROUP}}
+     PRIQTY -1 SECQTY -1
+     ERASE  NO
+     FREEPAGE 0 PCTFREE 10
+     GBPCACHE CHANGED
+     NOT CLUSTER
+     COMPRESS NO
+     INCLUDE NULL KEYS
+     BUFFERPOOL BP0
+     CLOSE NO
+     COPY NO
+     DEFER NO
+     DEFINE YES
+     PIECESIZE 2 G;
+
+-- Create foreign key on EVENTID
+   ALTER TABLE {{SCHEMA}}.{{TEAMS_TBNAME}}
+     FOREIGN KEY TEAMS_FK1 (EVENTID)
+     REFERENCES {{SCHEMA}}.{{EVENTS_TBNAME}}
+       (EVENTID)
+     ON DELETE RESTRICT ENFORCED;
+
+-- Create foreign key on CAPTAINID
+   ALTER TABLE {{SCHEMA}}.{{TEAMS_TBNAME}}
+     FOREIGN KEY TEAMS_FK2 (CAPTAINID)
+     REFERENCES {{SCHEMA}}.{{PLAYERS_TBNAME}}
+       (PLAYERID)
+     ON DELETE RESTRICT ENFORCED;
+
+   COMMIT;
