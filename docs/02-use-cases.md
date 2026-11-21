@@ -23,7 +23,7 @@ clock:
 | DRAFT | Only admins see it | | Upcoming | Before start |
 | PUBLISHED | Everyone sees it | | Running | Between start and end |
 | CLOSED | Finished and offboarded; still visible | | Frozen | Running, after the freeze time |
-| | | | Ended | After end |
+| ARCHIVED | A closed event put away: read-only, listed only on request | | Ended | After end |
 
 ## Visitor
 
@@ -34,12 +34,13 @@ clock:
   first. 3. The visitor opens one and sees its description, dates, phase, play
   mode and whether registration is open.
 - **Exceptions:** no events: an empty list.
-- **Rules:** DRAFT events are hidden. Registration codes and RACF groups are never
-  shown.
+- **Rules:** DRAFT events are hidden. ARCHIVED events are left out of the list,
+  except when the visitor asks for the archive; opened directly, they show as
+  usual. Registration codes and RACF groups are never shown.
 
 ### V2 View leaderboard
 - **Goal:** see the standings of an event.
-- **Preconditions:** the event is PUBLISHED or CLOSED.
+- **Preconditions:** the event is PUBLISHED, CLOSED or ARCHIVED.
 - **Main flow:** 1. The visitor opens the leaderboard. 2. The system shows rank,
   team or player name, score and number of solves, 20 rows at a time.
 - **Exceptions:** event hidden or unknown: not found. No scores yet: empty list.
@@ -353,6 +354,18 @@ These apply to team events only. In an individual event, the system rejects them
 - **Rules:** deleting userids altogether is a separate, manual admin action after
   closing. See decision 3.
 
+### A10 Archive an event
+- **Goal:** keep the event lists short without losing past events.
+- **Preconditions:** signed in as admin; the event is CLOSED.
+- **Main flow:** 1. The admin archives the event. 2. It becomes ARCHIVED: gone
+  from the public event list and the admin list without filter. 3. Visitors find
+  it in the archive, with its leaderboard; players still see it in their own
+  events. 4. If needed, the admin restores it to CLOSED.
+- **Exceptions:** archiving an event that isn't CLOSED, or restoring one that
+  isn't ARCHIVED: rejected.
+- **Rules:** only the status changes; all data stays. An archived event is
+  read-only, as a closed one. See decision 6.
+
 ## System
 
 ### S1 Submit a provisioning job
@@ -428,6 +441,9 @@ These apply to team events only. In an individual event, the system rejects them
    for joined players. Extra public pages can be added later.
 5. **Challenges stay readable after the end, but nobody can submit.** There is no
    practice mode.
+6. **Past events are archived, not deleted.** Deleting would mean deleting from
+   eleven child tables, including PROVJOBS, the audit trail of the RACF changes.
+   Archiving only changes the status, and can be undone.
 
 ### Mainframe decisions
 

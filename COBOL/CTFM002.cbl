@@ -5,12 +5,13 @@
       * POST, GET, PUT and DELETE /admin/events: create, read, update *
       * or delete an event, by OPCODE C, R, U or D. A new event is a  *
       * DRAFT. Publishing needs a visible challenge; back to DRAFT    *
-      * only without places; CLOSED only through CTFM502, and then    *
-      * read-only. Once anyone has a place, play mode and RACF group  *
-      * are locked, and team size and cap cannot go below what is     *
-      * taken. Only a DRAFT can be deleted, with its challenges,      *
-      * prerequisites and announcements. The caller (the admin        *
-      * wrapper) has checked CTF.ADMIN, and commits or rolls back.    *
+      * only without places; CLOSED only through CTFM502, ARCHIVED    *
+      * only through CTFM540, and both read-only. Once anyone has a   *
+      * place, play mode and RACF group are locked, and team size and *
+      * cap cannot go below what is taken. Only a DRAFT can be        *
+      * deleted, with its challenges, prerequisites and               *
+      * announcements. The caller (the admin wrapper) has checked     *
+      * CTF.ADMIN, and commits or rolls back.                         *
       * ------------------------------------------------------------- *
       * Output: RETURNCODE and REASONCODE                             *
       * 00 00 = Success                                               *
@@ -191,6 +192,15 @@
                  MOVE N'53' TO REASONCODE OF P-LCTFM002
                  STRING N'Close an event with POST '
                         N'/admin/eventClosures'
+                    DELIMITED BY SIZE
+                    INTO INFOMESSAGE OF P-LCTFM002
+              END-IF
+              IF RETURNCODE OF P-LCTFM002 = N'00'
+              AND EVENTSTATUS OF P-LCTFM002 = N'A'
+                 MOVE N'08' TO RETURNCODE OF P-LCTFM002
+                 MOVE N'53' TO REASONCODE OF P-LCTFM002
+                 STRING N'Archive an event with POST '
+                        N'/admin/eventArchives'
                     DELIMITED BY SIZE
                     INTO INFOMESSAGE OF P-LCTFM002
               END-IF
@@ -453,6 +463,7 @@
                         UPDATEDDATE = CURRENT TIMESTAMP
                   WHERE EVENTID = :DCLTBCTF002.EVENTID
                     AND EVENTSTATUS <> :C-C
+                    AND EVENTSTATUS <> :C-A
                     AND PLAYERCOUNT <= :DCLTBCTF002.MAXPLAYERS
                     AND :DCLTBCTF002.MAXTEAMSIZE >=
                        (SELECT COALESCE(MAX(T.MEMBERCOUNT), 0)
@@ -873,9 +884,10 @@
            IF RETURNCODE OF P-LCTFM002 = N'00'
               EVALUATE TRUE
               WHEN W-OLD-STATUS = C-C
+              WHEN W-OLD-STATUS = C-A
                  MOVE N'08' TO RETURNCODE OF P-LCTFM002
                  MOVE N'53' TO REASONCODE OF P-LCTFM002
-                 MOVE N'A closed event cannot be changed' TO
+                 MOVE N'A closed or archived event cannot be changed' TO
                       INFOMESSAGE OF P-LCTFM002
               WHEN EVENTSTATUS OF DCLTBCTF002 = C-P
                AND W-OLD-STATUS = C-D

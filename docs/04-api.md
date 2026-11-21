@@ -1,8 +1,8 @@
 # REST API
 
 A guide to [`openapi/ctf_1.0.0.yaml`](../openapi/ctf_1.0.0.yaml), the public contract
-of the CTF backend, with base path `/ctf/API/v1`. It has 81 operations:
-7 public, 20 player and 54 admin. The LWW processing steps
+of the CTF backend, with base path `/ctf/API/v1`. It has 83 operations:
+7 public, 20 player and 56 admin. The LWW processing steps
 (`ctf_2_1.0.0.yaml`) follow together with the copybooks.
 
 ## Conventions
@@ -87,7 +87,7 @@ A wrong flag isn't an error: `POST /submissions` returns 201 with `isCorrect` se
 | Method | Path | What it does | Use cases |
 |---|---|---|---|
 | POST | `/token` | Sign in with RACF userid and passphrase | P1 |
-| GET | `/events` | List published and closed events | V1 |
+| GET | `/events` | List published and closed events; with `eventStatus_filter=A` the archived ones | V1 |
 | GET | `/events/{eventID}` | Get an event | V1 |
 | GET | `/leaderboard/{eventID}` | Get the leaderboard, honouring the freeze | V2 |
 | POST | `/registrations` | Register with an event code and display name | R1 |
@@ -123,12 +123,14 @@ A wrong flag isn't an error: `POST /submissions` returns 201 with `isCorrect` se
 
 | Method | Path | What it does | Use cases |
 |---|---|---|---|
-| GET | `/admin/events` | List Events | A1 |
+| GET | `/admin/events` | List Events; without `eventStatus_filter` the archived ones are left out | A1, A10 |
 | POST | `/admin/events` | Create Event | A1 |
 | GET | `/admin/events/{eventID}` | Get Event | A1 |
 | PUT | `/admin/events/{eventID}` | Update Event | A1 |
 | DELETE | `/admin/events/{eventID}` | Delete Event | A1 |
 | POST | `/admin/eventClosures/{eventID}` | Close an event and queue the offboarding | A9 |
+| POST | `/admin/eventArchives/{eventID}` | Archive a closed event | A10 |
+| DELETE | `/admin/eventArchives/{eventID}` | Restore an archived event to closed | A10 |
 | GET | `/admin/challenges` | List Challenges | A2 |
 | POST | `/admin/challenges` | Create Challenge | A2 |
 | GET | `/admin/challenges/{challengeID}` | Get Challenge | A2 |

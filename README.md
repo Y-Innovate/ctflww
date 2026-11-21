@@ -59,7 +59,7 @@ Browser ──► LWW (in CICS) ──► COBOL wrapper CTFCnnn ──► module
 | [02-use-cases.md](docs/02-use-cases.md) | All use cases: visitor, registrant, player, team captain, organizer, system |
 | [03-data-model.md](docs/03-data-model.md) | The DB2 tables, scoring and the leaderboard query |
 | [04-api.md](docs/04-api.md) | REST conventions, access per path, status and reason codes |
-| [05](docs/05-iteration-1.md) to [09](docs/09-iteration-5.md) | The five build iterations: what each added, design decisions, setup and tests |
+| [05](docs/05-iteration-1.md) to [10](docs/10-iteration-6.md) | The six build iterations: what each added, design decisions, setup and tests |
 
 ## Requirements
 

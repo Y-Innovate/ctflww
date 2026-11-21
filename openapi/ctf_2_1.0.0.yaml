@@ -56,7 +56,7 @@ paths:
       - AllocateIOArea:
           name: LCTFM202
           initWith: 0x00
-          size: 9678
+          size: 9680
           fields:
             $ref: '#/components/x-ioareas/LCTFM202/fields'
       - Mapping:
@@ -68,6 +68,9 @@ paths:
           - type: singleFields
             fromName: eventID_since
             toName: EVENTID-SINCE
+          - type: singleFields
+            fromName: eventStatus_filter
+            toName: EVENTSTATUS-FILTER
       - Link:
           program: CTFC202
           passDataWith: container
@@ -3558,6 +3561,189 @@ paths:
           - JSONWriter:
               responseObject:
                 $ref: '#/paths/~1admin~1eventClosures~1{eventID}/post/x-LWWProcessingSteps/4/Condition/LWWProcessingStepsWhenFalse/0/CreateObject'
+  /admin/eventArchives/{eventID}:
+    post:
+      x-LWWProcessingSteps:
+      - AllocateIOArea:
+          name: LCTFM540
+          initWith: 0x00
+          size: 160
+          fields:
+            $ref: '#/components/x-ioareas/LCTFM540/fields'
+      - ExtractIdFromPath:
+          name: CTFC540_ID
+      - Mapping:
+          from:
+            $ref: '#/paths/~1admin~1eventArchives~1{eventID}/post/x-LWWProcessingSteps/1/ExtractIdFromPath'
+          to:
+            $ref: '#/paths/~1admin~1eventArchives~1{eventID}/post/x-LWWProcessingSteps/0/AllocateIOArea/fields'
+          combinations:
+          - type: singleFields
+            toName: EVENTID
+          - type: constant
+            constant: A
+            toName: OPCODE
+      - Link:
+          program: CTFC540
+          passDataWith: container
+          in:
+          - containerName: LWW-LINK-PAR-03
+            $ref: '#/paths/~1admin~1eventArchives~1{eventID}/post/x-LWWProcessingSteps/0/AllocateIOArea'
+          out:
+          - containerName: LWW-LINK-PAR-03
+            $ref: '#/paths/~1admin~1eventArchives~1{eventID}/post/x-LWWProcessingSteps/0/AllocateIOArea'
+      - Condition:
+          name: LCTFM540_OK
+          source:
+            $ref: '#/paths/~1admin~1eventArchives~1{eventID}/post/x-LWWProcessingSteps/0/AllocateIOArea/fields'
+          boolOperator: AND
+          expressions:
+          - type: fieldEqualsConstant
+            fieldName: RETURNCODE
+            constant: '00'
+          LWWProcessingStepsWhenTrue:
+          - CreateObject:
+              name: CTFC540_RET_OK
+              properties:
+                $ref: ctf_1.0.0.yaml/components/schemas/AdminArchiveEventResponse/properties
+          - Mapping:
+              from:
+                $ref: '#/paths/~1admin~1eventArchives~1{eventID}/post/x-LWWProcessingSteps/0/AllocateIOArea/fields'
+              to:
+                $ref: '#/paths/~1admin~1eventArchives~1{eventID}/post/x-LWWProcessingSteps/4/Condition/LWWProcessingStepsWhenTrue/0/CreateObject/properties'
+              combinations:
+              - type: singleFields
+                fromName: RETURNCODE
+                toName: retCode
+              - type: singleFields
+                fromName: REASONCODE
+                toName: reasonCode
+              - type: singleFields
+                fromName: INFOMESSAGE
+                toName: infoMessage
+              - type: singleFields
+                fromName: EVENTID
+                toName: eventID
+              - type: singleFields
+                fromName: EVENTSTATUS
+                toName: eventStatus
+          - JSONWriter:
+              responseObject:
+                $ref: '#/paths/~1admin~1eventArchives~1{eventID}/post/x-LWWProcessingSteps/4/Condition/LWWProcessingStepsWhenTrue/0/CreateObject'
+          LWWProcessingStepsWhenFalse:
+          - CreateObject:
+              name: CTFC540_RET_ERR
+              properties:
+                $ref: ctf_1.0.0.yaml/components/schemas/ShortResponse/properties
+          - Mapping:
+              from:
+                $ref: '#/paths/~1admin~1eventArchives~1{eventID}/post/x-LWWProcessingSteps/0/AllocateIOArea/fields'
+              to:
+                $ref: '#/paths/~1admin~1eventArchives~1{eventID}/post/x-LWWProcessingSteps/4/Condition/LWWProcessingStepsWhenFalse/0/CreateObject/properties'
+              combinations:
+              - type: singleFields
+                fromName: RETURNCODE
+                toName: retCode
+              - type: singleFields
+                fromName: REASONCODE
+                toName: reasonCode
+              - type: singleFields
+                fromName: INFOMESSAGE
+                toName: infoMessage
+          - JSONWriter:
+              responseObject:
+                $ref: '#/paths/~1admin~1eventArchives~1{eventID}/post/x-LWWProcessingSteps/4/Condition/LWWProcessingStepsWhenFalse/0/CreateObject'
+    delete:
+      x-LWWProcessingSteps:
+      - AllocateIOArea:
+          name: LCTFM540
+          initWith: 0x00
+          size: 160
+          fields:
+            $ref: '#/components/x-ioareas/LCTFM540/fields'
+      - ExtractIdFromPath:
+          name: CTFC540D_ID
+      - Mapping:
+          from:
+            $ref: '#/paths/~1admin~1eventArchives~1{eventID}/delete/x-LWWProcessingSteps/1/ExtractIdFromPath'
+          to:
+            $ref: '#/paths/~1admin~1eventArchives~1{eventID}/delete/x-LWWProcessingSteps/0/AllocateIOArea/fields'
+          combinations:
+          - type: singleFields
+            toName: EVENTID
+          - type: constant
+            constant: R
+            toName: OPCODE
+      - Link:
+          program: CTFC540
+          passDataWith: container
+          in:
+          - containerName: LWW-LINK-PAR-03
+            $ref: '#/paths/~1admin~1eventArchives~1{eventID}/delete/x-LWWProcessingSteps/0/AllocateIOArea'
+          out:
+          - containerName: LWW-LINK-PAR-03
+            $ref: '#/paths/~1admin~1eventArchives~1{eventID}/delete/x-LWWProcessingSteps/0/AllocateIOArea'
+      - Condition:
+          name: LCTFM540_OK
+          source:
+            $ref: '#/paths/~1admin~1eventArchives~1{eventID}/delete/x-LWWProcessingSteps/0/AllocateIOArea/fields'
+          boolOperator: AND
+          expressions:
+          - type: fieldEqualsConstant
+            fieldName: RETURNCODE
+            constant: '00'
+          LWWProcessingStepsWhenTrue:
+          - CreateObject:
+              name: CTFC540D_RET_OK
+              properties:
+                $ref: ctf_1.0.0.yaml/components/schemas/AdminArchiveEventResponse/properties
+          - Mapping:
+              from:
+                $ref: '#/paths/~1admin~1eventArchives~1{eventID}/delete/x-LWWProcessingSteps/0/AllocateIOArea/fields'
+              to:
+                $ref: '#/paths/~1admin~1eventArchives~1{eventID}/delete/x-LWWProcessingSteps/4/Condition/LWWProcessingStepsWhenTrue/0/CreateObject/properties'
+              combinations:
+              - type: singleFields
+                fromName: RETURNCODE
+                toName: retCode
+              - type: singleFields
+                fromName: REASONCODE
+                toName: reasonCode
+              - type: singleFields
+                fromName: INFOMESSAGE
+                toName: infoMessage
+              - type: singleFields
+                fromName: EVENTID
+                toName: eventID
+              - type: singleFields
+                fromName: EVENTSTATUS
+                toName: eventStatus
+          - JSONWriter:
+              responseObject:
+                $ref: '#/paths/~1admin~1eventArchives~1{eventID}/delete/x-LWWProcessingSteps/4/Condition/LWWProcessingStepsWhenTrue/0/CreateObject'
+          LWWProcessingStepsWhenFalse:
+          - CreateObject:
+              name: CTFC540D_RET_ERR
+              properties:
+                $ref: ctf_1.0.0.yaml/components/schemas/ShortResponse/properties
+          - Mapping:
+              from:
+                $ref: '#/paths/~1admin~1eventArchives~1{eventID}/delete/x-LWWProcessingSteps/0/AllocateIOArea/fields'
+              to:
+                $ref: '#/paths/~1admin~1eventArchives~1{eventID}/delete/x-LWWProcessingSteps/4/Condition/LWWProcessingStepsWhenFalse/0/CreateObject/properties'
+              combinations:
+              - type: singleFields
+                fromName: RETURNCODE
+                toName: retCode
+              - type: singleFields
+                fromName: REASONCODE
+                toName: reasonCode
+              - type: singleFields
+                fromName: INFOMESSAGE
+                toName: infoMessage
+          - JSONWriter:
+              responseObject:
+                $ref: '#/paths/~1admin~1eventArchives~1{eventID}/delete/x-LWWProcessingSteps/4/Condition/LWWProcessingStepsWhenFalse/0/CreateObject'
   /admin/refTables:
     post:
       x-LWWProcessingSteps:
@@ -8583,6 +8769,9 @@ components:
       - name: INFOMESSAGE
         type: CHARARRAY1200
         length: 72
+      - name: EVENTSTATUS-FILTER
+        type: CHARARRAY1200
+        length: 1
       - name: EVENTID-SINCE
         type: UI4
         length: 4
@@ -9670,6 +9859,28 @@ components:
         length: 1
       copybook:
         name: LCTFM502
+    LCTFM540:
+      fields:
+      - name: RETURNCODE
+        type: CHARARRAY1200
+        length: 2
+      - name: REASONCODE
+        type: CHARARRAY1200
+        length: 2
+      - name: INFOMESSAGE
+        type: CHARARRAY1200
+        length: 72
+      - name: OPCODE
+        type: CHARARRAY1200
+        length: 1
+      - name: EVENTID
+        type: UI4
+        length: 4
+      - name: EVENTSTATUS
+        type: CHARARRAY1200
+        length: 1
+      copybook:
+        name: LCTFM540
     LCTFM503:
       fields:
       - name: RETURNCODE

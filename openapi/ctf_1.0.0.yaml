@@ -67,7 +67,7 @@ paths:
   /events:
     summary: events
     get:
-      summary: List published and closed events
+      summary: List published and closed events, or the archived ones
       operationId: listEvents
       tags:
       - public
@@ -79,6 +79,12 @@ paths:
         required: false
         schema:
           $ref: '#/components/schemas/eventID'
+      - name: eventStatus_filter
+        in: query
+        description: 'Filter: empty = published and closed; P, C or A = only that status (A: the archived events)'
+        required: false
+        schema:
+          $ref: '#/components/schemas/eventStatus'
       responses:
         '200':
           description: Successful
@@ -1835,6 +1841,118 @@ paths:
           description: Unexpected error
       x-LWWProcessingSteps:
         $ref: ctf_2_1.0.0.yaml/paths/~1admin~1eventClosures~1{eventID}/post/x-LWWProcessingSteps
+  /admin/eventArchives/{eventID}:
+    summary: 'Admin: eventArchives'
+    post:
+      summary: Archive a closed event
+      operationId: adminArchiveEvent
+      tags:
+      - admin
+      parameters:
+      - name: eventID
+        in: path
+        description: eventID
+        required: true
+        schema:
+          $ref: '#/components/schemas/eventID'
+      responses:
+        '200':
+          description: Successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminArchiveEventResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShortResponse'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShortResponse'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShortResponse'
+        '409':
+          description: 'Conflict: duplicate, full, or not possible in this state'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShortResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShortResponse'
+        default:
+          description: Unexpected error
+      x-LWWProcessingSteps:
+        $ref: ctf_2_1.0.0.yaml/paths/~1admin~1eventArchives~1{eventID}/post/x-LWWProcessingSteps
+    delete:
+      summary: Restore an archived event to closed
+      operationId: adminRestoreEvent
+      tags:
+      - admin
+      parameters:
+      - name: eventID
+        in: path
+        description: eventID
+        required: true
+        schema:
+          $ref: '#/components/schemas/eventID'
+      responses:
+        '200':
+          description: Successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminArchiveEventResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShortResponse'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShortResponse'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShortResponse'
+        '409':
+          description: 'Conflict: duplicate, full, or not possible in this state'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShortResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShortResponse'
+        default:
+          description: Unexpected error
+      x-LWWProcessingSteps:
+        $ref: ctf_2_1.0.0.yaml/paths/~1admin~1eventArchives~1{eventID}/delete/x-LWWProcessingSteps
   /admin/challenges:
     summary: 'Admin: challenges'
     get:
@@ -4819,7 +4937,7 @@ components:
       type: string
       minLength: 0
       maxLength: 1
-      description: D draft, P published, C closed
+      description: D draft, P published, C closed, A archived
     flag:
       type: string
       minLength: 0
@@ -6021,6 +6139,19 @@ components:
         updatedDate:
           $ref: '#/components/schemas/updatedDate'
     AdminCloseEventResponse:
+      type: object
+      properties:
+        retCode:
+          $ref: '#/components/schemas/retCode'
+        reasonCode:
+          $ref: '#/components/schemas/reasonCode'
+        infoMessage:
+          $ref: '#/components/schemas/infoMessage'
+        eventID:
+          $ref: '#/components/schemas/eventID'
+        eventStatus:
+          $ref: '#/components/schemas/eventStatus'
+    AdminArchiveEventResponse:
       type: object
       properties:
         retCode:

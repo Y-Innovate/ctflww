@@ -3,6 +3,9 @@
       *===============================================================*
       * This program is a DB2 module of the CTF application.          *
       * GET /events: published and closed events, newest first.       *
+      * EVENTSTATUS-FILTER: empty = published and closed; P, C or A = *
+      * only that status, so A lists the archived events. Drafts are  *
+      * never listed.                                                 *
       * EVENTID-SINCE: paging, entries before this ID (0 = start).    *
       * ------------------------------------------------------------- *
       * Output: RETURNCODE and REASONCODE                             *
@@ -28,6 +31,8 @@
           05 W-EVENTID-SINCE PIC S9(9) COMP-5.
           05 W-PHASE      PIC X.
           05 W-REGOPEN    PIC X.
+          05 W-STATUS-1   PIC N.
+          05 W-STATUS-2   PIC N.
 
        01 C-CODES.
           05 C-A          PIC N VALUE N'A'.
@@ -87,6 +92,17 @@
 
            MOVE 0 TO EVENT-COUNT OF P-LCTFM202
            MOVE EVENTID-SINCE OF P-LCTFM202 TO W-EVENTID-SINCE
+
+           INSPECT EVENTSTATUS-FILTER OF P-LCTFM202
+                   REPLACING ALL NX'0000' BY N' '
+           IF EVENTSTATUS-FILTER OF P-LCTFM202 = SPACE
+              MOVE C-P TO W-STATUS-1
+              MOVE C-C TO W-STATUS-2
+           ELSE
+              MOVE FUNCTION UPPER-CASE(EVENTSTATUS-FILTER OF P-LCTFM202)
+                TO W-STATUS-1
+              MOVE W-STATUS-1 TO W-STATUS-2
+           END-IF
            .
        R001-INIT-END.
            EXIT.
@@ -118,6 +134,8 @@
                           THEN 'Y' ELSE 'N' END
                 FROM TBCTF002
                WHERE EVENTSTATUS <> :C-D
+                 AND (EVENTSTATUS = :W-STATUS-1
+                  OR  EVENTSTATUS = :W-STATUS-2)
                  AND (:W-EVENTID-SINCE = 0
                   OR  EVENTID < :W-EVENTID-SINCE)
                ORDER BY EVENTID DESC

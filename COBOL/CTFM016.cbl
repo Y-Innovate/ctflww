@@ -18,7 +18,7 @@
       * 08 12/21/42 = Error: SQL error                                *
       * 08 13 = Error: event not found, or team not in the event      *
       * 08 41 = Error: delete of a missing award                      *
-      * 08 53 = Error: the event is closed                            *
+      * 08 53 = Error: the event is closed or archived                *
       * 08 90 = Error: CTFA990 failed                                 *
       * ------------------------------------------------------------- *
       * Updates:                                                      *
@@ -156,10 +156,10 @@
 
            EVALUATE SQLCODE
            WHEN 0
-              IF W-STATUS = C-C
+              IF W-STATUS = C-C OR W-STATUS = C-A
                  MOVE N'08' TO RETURNCODE OF P-LCTFM016
                  MOVE N'53' TO REASONCODE OF P-LCTFM016
-                 MOVE N'The event is closed' TO
+                 MOVE N'The event is closed or archived' TO
                       INFOMESSAGE OF P-LCTFM016
               END-IF
            WHEN 100

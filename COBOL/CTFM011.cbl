@@ -23,7 +23,8 @@
       * 08 12/21/32/42 = Error: SQL error                             *
       * 08 13 = Error: event or challenge not found                   *
       * 08 31/41 = Error: update or delete of a missing row           *
-      * 08 53 = Error: event closed, no flag, or submissions          *
+      * 08 53 = Error: event closed or archived, no flag, or          *
+      *         submissions                                           *
       * 08 90 = Error: CTFA990 failed                                 *
       * ------------------------------------------------------------- *
       * Updates:                                                      *
@@ -561,10 +562,10 @@
 
            EVALUATE SQLCODE
            WHEN 0
-              IF W-STATUS = C-C
+              IF W-STATUS = C-C OR W-STATUS = C-A
                  MOVE N'08' TO RETURNCODE OF P-LCTFM011
                  MOVE N'53' TO REASONCODE OF P-LCTFM011
-                 MOVE N'The event is closed' TO
+                 MOVE N'The event is closed or archived' TO
                       INFOMESSAGE OF P-LCTFM011
               END-IF
            WHEN 100

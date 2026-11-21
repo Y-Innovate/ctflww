@@ -200,14 +200,14 @@ Key/value lists: challenge categories (`CATEGORY`), allowed event RACF groups (`
 
 ### 002 EVENTS (`TBCTF002`, `AA000005`)
 
-One competition. Phase (upcoming/running/frozen/ended) is worked out from the timestamps, not stored.
+One competition. Phase (upcoming/running/frozen/ended) is worked out from the timestamps, not stored. ARCHIVED (A) is a CLOSED event put away; only `CTFM540` sets it, and back.
 
 | Column | Type | Null | Meaning |
 |---|---|---|---|
 | **EVENTID** | INTEGER identity |  | Key |
 | EVENTNAME | VARGRAPHIC(100) |  | Name |
 | DESCRIPTION | VARGRAPHIC(1000) | Yes | Public description |
-| EVENTSTATUS | GRAPHIC(1) |  | D draft, P published, C closed |
+| EVENTSTATUS | GRAPHIC(1) |  | D draft, P published, C closed, A archived |
 | PLAYMODE | GRAPHIC(1) |  | I individual, T team |
 | MAXTEAMSIZE | SMALLINT |  | 1 in individual mode |
 | STARTTS | TIMESTAMP |  | Start |
@@ -495,6 +495,7 @@ Endpoints are in [04-api.md](04-api.md).
 | A7 Awards | AWARDS | TEAMS |
 | A8 Announcements | ANNOUNCEMENTS | EVENTS |
 | A9 Close event | EVENTS, PROVJOBS | PARTICIPANTS |
+| A10 Archive event | EVENTS | EVENTS |
 | S1 Submit job | PROVJOBS | PROVJOBS |
 | S2 Record result | PROVJOBS, PLAYERS, PARTICIPANTS | PROVJOBS |
 | S3 Scheduled batch | PROVJOBS | PROVJOBS |

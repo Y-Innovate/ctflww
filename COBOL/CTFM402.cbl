@@ -3,8 +3,9 @@
       *===============================================================*
       * This program is a DB2 module of the CTF application.          *
       * GET /admin/events: all events, by EVENTID, also drafts and    *
-      * closed ones. Filter, optional: status. The caller (the admin  *
-      * wrapper) has checked CTF.ADMIN.                               *
+      * closed ones. Filter, optional: status. Without it, archived   *
+      * events are left out; filter A lists them. The caller (the     *
+      * admin wrapper) has checked CTF.ADMIN.                         *
       * ------------------------------------------------------------- *
       * Output: RETURNCODE and REASONCODE                             *
       * 00 00 = Success, also when there are no rows                  *
@@ -31,6 +32,7 @@
           05 W-PHASE      PIC X.
           05 W-EVENT-SINCE PIC S9(9) COMP-5.
           05 W-I          PIC S9(4) COMP-5.
+          05 W-NOT-STATUS PIC N.
 
            COPY CTFCTXW.
 
@@ -82,6 +84,9 @@
            MOVE 0 TO EVENT-COUNT OF P-LCTFM402
            MOVE 1 TO W-STATUS-PAT-LEN
            MOVE N'%' TO W-STATUS-PAT-TEXT
+      *    No filter: everything but archived (W-NOT-STATUS A). With a
+      *    filter, W-NOT-STATUS is a space, which no status equals.
+           MOVE C-A TO W-NOT-STATUS
            INSPECT EVENTSTATUS-FILTER OF P-LCTFM402
                    REPLACING ALL NX'0000' BY N' '
            IF EVENTSTATUS-FILTER OF P-LCTFM402 NOT = SPACES
@@ -92,6 +97,7 @@
                 INTO W-STATUS-PAT-TEXT
                 WITH POINTER W-STATUS-PAT-LEN
               SUBTRACT 1 FROM W-STATUS-PAT-LEN
+              MOVE SPACE TO W-NOT-STATUS
            END-IF
            MOVE EVENTID-SINCE OF P-LCTFM402 TO W-EVENT-SINCE
            .
@@ -128,6 +134,7 @@
                      UPDATEDDATE
                 FROM TBCTF002
                WHERE EVENTSTATUS LIKE :W-STATUS-PAT
+                 AND EVENTSTATUS <> :W-NOT-STATUS
                  AND EVENTID > :W-EVENT-SINCE
                ORDER BY EVENTID
                FETCH FIRST 20 ROWS ONLY
