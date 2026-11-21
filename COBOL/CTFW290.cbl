@@ -26,6 +26,7 @@
            05  C-CONT-NAME-LWW-03    PIC X(16) VALUE 'LWW-LINK-PAR-03'.
            05  C-CONT-NAME-W290      PIC X(16) VALUE 'LCTFW290'.
            05  C-PGM-CTFC290         PIC X(8)  VALUE 'CTFC290'.
+           05  W-TRANSID             PIC X(4).
            05  W-CHNL-NAME           PIC X(16).
            05  W-CONT-NAME           PIC X(16).
            05  W-CONT-POINTER        POINTER.
@@ -125,12 +126,17 @@
 
       *===============================================================*
       * R005-LINK: Link to CTFC290 with the LWW channel. No SYSID, so *
-      * the dynamic routing program picks the target region.          *
+      * the dynamic routing program picks the target region. TRANSID: *
+      * the mirror in the target region runs under our own tranid,    *
+      * which must be defined there with PROGRAM(DFHMIRS).            *
       *===============================================================*
        R005-LINK SECTION.
+           MOVE EIBTRNID TO W-TRANSID
+
            EXEC CICS
               LINK PROGRAM(C-PGM-CTFC290)
                    CHANNEL(C-CHNL-NAME-LWW)
+                   TRANSID(W-TRANSID)
                    NOHANDLE
            END-EXEC
 
