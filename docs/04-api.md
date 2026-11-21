@@ -78,6 +78,7 @@ The general codes, with `08 5x` added for the game rules:
 | `08 56` | 400 | Passphrase refused by RACF |
 | `08 57` | 403 | Wrong claim token |
 | `08 90` | 500 | Security or userid routine failed |
+| `08 91` | 500 | Local wrapper could not reach the DPL program (`CTFW290` LINK to `CTFC290` failed) |
 
 A wrong flag isn't an error: `POST /submissions` returns 201 with `isCorrect` set to `N`.
 

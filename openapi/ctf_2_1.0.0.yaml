@@ -703,7 +703,7 @@ paths:
           fields:
             $ref: '#/components/x-ioareas/LCTFM290/fields'
       - Link:
-          program: CTFC290
+          program: CTFW290
           passDataWith: container
           in:
           - containerName: LWW-LINK-PAR-03

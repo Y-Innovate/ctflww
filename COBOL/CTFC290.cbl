@@ -4,6 +4,9 @@
       * This program is a REST program of the CTF application.        *
       * GET /me: RACF userid and name, the role from the FACILITY     *
       * resource CTF.ADMIN, and the player record if there is one.    *
+      * Runs as DPL program, where ASSIGN USERNAME is not allowed:    *
+      * LWW links to wrapper CTFW290 in the routing region, which     *
+      * does the ASSIGN and passes the result in container LCTFW290.  *
       * ------------------------------------------------------------- *
       * Updates:                                                      *
       *                                                               *
@@ -18,6 +21,7 @@
            05  C-CHNL-NAME-LWW       PIC X(16) VALUE 'LWW-LINK-CHL-00'.
            05  C-CONT-NAME-LWW-00    PIC X(16) VALUE 'LWW-LINK-PAR-00'.
            05  C-CONT-NAME-LWW-03    PIC X(16) VALUE 'LWW-LINK-PAR-03'.
+           05  C-CONT-NAME-W290      PIC X(16) VALUE 'LCTFW290'.
            05  W-CHNL-NAME           PIC X(16).
            05  W-CONT-NAME           PIC X(16).
            05  W-CONT-POINTER        POINTER.
@@ -31,8 +35,6 @@
            05  SW-CONT-FOUND-VAL     PIC X     VALUE 'N'.
                88  SW-CONT-FOUND               VALUE 'Y'.
                88  SW-CONT-MISSING             VALUE 'N'.
-           05  W-USERID              PIC X(8)  VALUE SPACES.
-           05  W-USERNAME            PIC X(20) VALUE SPACES.
 
            05  W-MSGPTR              PIC S9(4) BINARY.
            05  MSGDEST               PIC S9(9) BINARY VALUE 2.
@@ -59,6 +61,8 @@
 
            COPY CTFADMW.
 
+       01  W-LCTFW290.
+           COPY LCTFW290.
        01  W-LCTFM290.
            COPY LCTFM290.
        01  W-LINKPAR.
@@ -103,16 +107,28 @@
       * R005-PROCESS: Call the module                                 *
       *===============================================================*
        R005-PROCESS SECTION.
-           EXEC CICS
-              ASSIGN USERID(W-USERID)
-                     USERNAME(W-USERNAME)
-                     NOHANDLE
-           END-EXEC
+      *    USERID and USERNAME come from CTFW290 (ASSIGN in the
+      *    routing region). Missing container: treated as failed.
+           INITIALIZE W-LCTFW290
+           MOVE '08' TO W290-RC OF W-LCTFW290
 
-           IF EIBRESP = DFHRESP(NORMAL)
-              MOVE FUNCTION NATIONAL-OF(W-USERID)
+           MOVE C-CHNL-NAME-LWW  TO W-CHNL-NAME
+           MOVE C-CONT-NAME-W290 TO W-CONT-NAME
+
+           PERFORM R910-GET-CONTAINER
+
+           IF SW-CONT-FOUND
+              SET ADDRESS OF P-CHAR TO W-CONT-POINTER
+              IF W-CONT-LENGTH > LENGTH OF W-LCTFW290
+                 MOVE LENGTH OF W-LCTFW290 TO W-CONT-LENGTH
+              END-IF
+              MOVE P-CHAR(1:W-CONT-LENGTH) TO W-LCTFW290
+           END-IF
+
+           IF W290-RC OF W-LCTFW290 = '00'
+              MOVE FUNCTION NATIONAL-OF(W290-USERID OF W-LCTFW290)
                 TO RACFUSERID OF W-LCTFM290
-              MOVE FUNCTION NATIONAL-OF(W-USERNAME)
+              MOVE FUNCTION NATIONAL-OF(W290-USERNAME OF W-LCTFW290)
                 TO USERNAME OF W-LCTFM290
               MOVE 'CTFM290' TO W-PGMNAME
               CALL W-PGMNAME USING W-LCTFM290
@@ -130,8 +146,12 @@
               MOVE N'ASSIGN USERID/USERNAME failed'
                 TO INFOMESSAGE OF W-LCTFM290
 
-              MOVE EIBRESP  TO W-EIBRESP
-              MOVE EIBRESP2 TO W-EIBRESP2
+              IF SW-CONT-FOUND
+                 MOVE W290-EIBRESP  OF W-LCTFW290 TO W-EIBRESP
+                 MOVE W290-EIBRESP2 OF W-LCTFW290 TO W-EIBRESP2
+              ELSE
+                 MOVE ZERO TO W-EIBRESP W-EIBRESP2
+              END-IF
               MOVE 256 TO Vstring-length
               MOVE 1 TO W-MSGPTR
               STRING 'ASSIGN USERID ERROR ' W-EIBRESP ' ' W-EIBRESP2
