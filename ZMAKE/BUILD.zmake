@@ -53,6 +53,15 @@ optmems     := ${stripext $(optfiles)}
 optlib      := $(hlq).OPTFILE
 opttgts     := ${addpdsname $(optlib),$(optmems)}
 
+#* Variables for ZMAKE source files
+zmakedir    := $(gitdir)/ZMAKE
+zmakefiles  := ${sh cd $(zmakedir); +
+                    find * -prune -type f -name "*.zmake" 2>&1 | +
+                    grep -v EDC5129I}
+zmakemems   := ${stripext $(zmakefiles)}
+zmakelib    := $(hlq).ZMAKE
+zmaketgts   := ${addpdsname $(zmakelib),$(zmakemems)}
+
 #* Variables for COBOL compile, ASM assembly and link-edit
 tmpasmlib   := ${function TEMPPDS}
 asmlstlib   := $(hlq).ASM.LISTING
@@ -77,7 +86,7 @@ syslib_lked := SYS1.CEE.SCEELKED $(cicshlq).CICS.SDFHLOAD+
 
 #* Group of data set names with specific characteristics
 recfmFB80   := $(asmlib) $(cpylib) $(cbllib) $(lkedlib)+
-               $(optlib) $(objlib) $(dbrmlib)
+               $(optlib) $(zmakelib) $(objlib) $(dbrmlib)
 recfmFBA133 := $(asmlstlib) $(cbllstlib)
 recfmVBM133 := $(lkedlstlib)
 recfmVB1562 := $(langxlib)
@@ -89,8 +98,8 @@ datasets    := $(recfmFB80) $(recfmFBA133) $(recfmVBM133)+
 
 #* Phony target that builds all
 .PHONY BUILD_ALL
-BUILD_ALL : $(datasets) $(asmtgts) $(cpytgts) $(cbltgts)+
-            $(lkedtgts) $(opttgts) $(loadtgts)
+BUILD_ALL : $(datasets) $(asmtgts) $(cpytgts)   $(cbltgts)+
+            $(lkedtgts) $(opttgts) $(zmaketgts) $(loadtgts)
 
 #* Phony target just to get USS copied to PDSE's
 .PHONY SETUP
@@ -115,6 +124,10 @@ $(lkedtgts) : $(lkeddir)/$%.lked
 #* Write OPTFILE sources from USS to PDS
 $(opttgts) : $(optdir)/$%.opt
 - CALL OGETU '$(optdir)/$%.opt' '$@' ISO88591
+
+#* Write ZMAKE sources from USS to PDS
+$(zmaketgts) : $(zmakedir)/$%.zmake
+- CALL OGETU '$(zmakedir)/$%.zmake' '$@' ISO88591
 
 #* Assemble ASM source
 $(objasmtgts) : $(asmlib)($%)
