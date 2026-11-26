@@ -96,24 +96,28 @@ $(loadprvtgts) : $(srcloadlib)($%)
 -              MEMBER($%) PRINTSUCCESS(NO)
 - CALL BIND SYSTEM(DBY1) PACKAGE(CTF$(ctfdb)) MEMBER($%)+
 -           OWNER(CTF$(ctfdb)) QUALIFIER(CTF$(ctfdb))+
--           LIBRARY('$(tgtdbrmlib)')
+-           LIBRARY('$(tgtdbrmlib)')+
+-           VALIDATE(BIND)
 
 $(loadpubtgts) : $(srcloadlib)($%)
 - CALL IEBCOPY PDSIN($(srcloadlib)) PDSOUT($(tgtloadlib))+
 -              MEMBER($%) PRINTSUCCESS(NO)
 - CALL BIND SYSTEM(DBY1) PACKAGE(CTF$(ctfdb)P) MEMBER($%)+
 -           OWNER(CTF$(ctfdb)) QUALIFIER(CTF$(ctfdb))+
--           LIBRARY('$(tgtdbrmlib)')
+-           LIBRARY('$(tgtdbrmlib)')+
+-           VALIDATE(BIND)
 
 $(loadbothtgts) : $(srcloadlib)($%)
 - CALL IEBCOPY PDSIN($(srcloadlib)) PDSOUT($(tgtloadlib))+
 -              MEMBER($%) PRINTSUCCESS(NO)
 - CALL BIND SYSTEM(DBY1) PACKAGE(CTF$(ctfdb)) MEMBER($%)+
 -           OWNER(CTF$(ctfdb)) QUALIFIER(CTF$(ctfdb))+
--           LIBRARY('$(tgtdbrmlib)')
+-           LIBRARY('$(tgtdbrmlib)')+
+-           VALIDATE(BIND)
 - CALL BIND SYSTEM(DBY1) PACKAGE(CTF$(ctfdb)P) MEMBER($%)+
 -           OWNER(CTF$(ctfdb)) QUALIFIER(CTF$(ctfdb))+
--           LIBRARY('$(tgtdbrmlib)')
+-           LIBRARY('$(tgtdbrmlib)')+
+-           VALIDATE(BIND)
 
 $(zmaketgts) : $(srczmakelib)($%)
 - CALL IEBCOPY PDSIN($(srczmakelib)) PDSOUT($(tgtzmakelib))+
