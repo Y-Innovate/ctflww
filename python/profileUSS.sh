@@ -19,7 +19,8 @@ thisdir=$(dirname $0)
 cd $thisdir
 cd ..
 
-. ~/venv/bin/activate
+# The Python venv with jinja2 and PyYAML: $CTF_VENV, or else ~/venv
+. "${CTF_VENV:-$HOME/venv}/bin/activate"
 
 python python/profileUSS.py $1 $2 $3
 

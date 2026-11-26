@@ -1,7 +1,7 @@
 # Uploads LWWAdmin/ to the /ctf folder of LWW's file system, through the LWW
 # Admin API.
 #
-# python uploadLWW.py
+# python uploadLWW.py [target] [--list] [--debug] [--keep] [--dry-run]
 #   Creates /ctf (folder ID CTF_FOLDER_ID) if it doesn't exist yet, then
 #   creates the folders and sends the files of LWWAdmin/ that are new or
 #   changed: committed files whose git hash differs from the "custom" field
@@ -14,7 +14,7 @@
 #   are the files of KEEP_ON_LWW and of the target's "keep:" list in
 #   runtimeTargets.yaml: files that belong on LWW but not in git, such as
 #   the single sign-on configuration.
-#   Host and sign-in come from runtimeTargets.yaml (see the example file).
+#   Host and sign-in come from runtimeTargets.yaml (runtimeTarget.py).
 #
 # Options: [target] --list --debug, and
 #   --keep      don't delete files on LWW that aren't in LWWAdmin/
@@ -28,90 +28,31 @@ import base64
 import json
 import os
 import re
-import requests
 import subprocess
 import sys
 import yaml
-import argparse
+import runtimeTarget
 
-from getpass import getpass
-from pathlib import Path
 from Globals import Globals
 from MyRequests import MyRequests
 
-# Hosts and sign-in details live in runtimeTargets.yaml next to this script,
-# see runtimeTargets.example.yaml. Usage: python uploadLWW.py [target] [--list] [--debug]
-
-scriptDir = Path(__file__).resolve().parent
-
-parser = argparse.ArgumentParser(description="Upload LWWAdmin/ to the /ctf folder of an LWWAPI server")
-parser.add_argument("target", nargs="?", help="name of the target in the config file (default: the config's 'default')")
-parser.add_argument("-c", "--config", default=str(scriptDir / "runtimeTargets.yaml"), help="config file (default: %(default)s)")
-parser.add_argument("-l", "--list", action="store_true", help="list the configured targets and exit")
-parser.add_argument("-d", "--debug", action="count", default=0, help="print requests and responses")
+parser = runtimeTarget.argParser("Upload LWWAdmin/ to the /ctf folder of an LWWAPI server")
 parser.add_argument("-k", "--keep", action="store_true", help="don't delete files on LWW that aren't in LWWAdmin/")
 parser.add_argument("-n", "--dry-run", action="store_true", help="only show what would be created, sent and deleted")
 args = parser.parse_args()
 
-if not os.path.isfile(args.config):
-    sys.exit(f"Config file {args.config} not found; copy runtimeTargets.example.yaml to it and fill it in")
+target = runtimeTarget.useTarget(args, "/LWWAPI/API")
 
-with open(args.config, "r") as configFile:
-    config = yaml.safe_load(configFile) or {}
+print(f"Uploading to {target['name']} ({target['host']}){' - dry run, nothing changes' if args.dry_run else ''}")
 
-targets = config.get("targets") or {}
-
-if args.list:
-    for name, t in targets.items():
-        marker = " (default)" if name == config.get("default") else ""
-        print(f"{name}{marker}: {t.get('host')} [{t.get('auth', 'password')}]")
-    sys.exit(0)
-
-targetName = args.target or config.get("default")
-
-if not targetName:
-    sys.exit(f"No target given and no default in {args.config}; choose one of: {', '.join(targets)}")
-
-if targetName not in targets:
-    sys.exit(f"Unknown target '{targetName}'; choose one of: {', '.join(targets)}")
-
-target = targets[targetName]
-
-if not target.get("host"):
-    sys.exit(f"Target '{targetName}' has no host")
-
-print(f"Uploading to {targetName} ({target['host']}){' - dry run, nothing changes' if args.dry_run else ''}")
-
-Globals.myHost = target["host"].rstrip("/")
-Globals.myBasepath = ""
-Globals.myDebug = args.debug
-Globals.s = requests.sessions.Session()
-# Extra headers sent with every request, e.g. a Cloudflare Access cookie
-Globals.s.headers.update(target.get("headers") or {})
-
-auth = target.get("auth", "password")
-
-if auth == "entra":
-    # Client credentials from a JSON file: client_id, client_secret, scope, grant_type
-    credsFile = os.path.expanduser(target.get("credsFile", "~/.creds"))
-
-    with open(credsFile, "r") as credfile:
-        Globals.myCreds = json.load(credfile)
-
-    MyRequests.getBearerToken(target["tokenUrl"])
-elif auth == "password":
-    userid = target.get("userid") or input("Give your userid: ")
-    passwd = getpass(f"Give the password of {userid}: ")
-    Globals.myCreds = (userid, passwd)
-
-    MyRequests.getBearerToken(target.get("tokenPath", "/LWWAPI/API/token"))
-else:
-    sys.exit(f"Target '{targetName}' has unknown auth '{auth}' (use 'password' or 'entra')")
+runtimeTarget.signIn(target)
 
 # The /ctf folder in the root of LWW's file system
 CTF_FOLDER_ID = "CT000000"
 CTF_FOLDER_NAME = "ctf"
-CTF_DEFAULT_TRAN = "CTFU"
+# /ctf itself runs under the public transaction CTFP; the route folders that
+# need a player or admin set their own transaction and login redirect in
+# their .name files, and so do the API paths (CTFP, CTFU, CTFA)
 CTF_PUBLIC_TRAN = "CTFP"
 # index.html of the web UI (ctflww-frontend), with this fixed ID in
 # LWWAdmin/.index.html: the page /ctf/ shows
@@ -123,7 +64,7 @@ KEEP_ON_LWW = {
     f"/{CTF_FOLDER_NAME}/sso_config.json",  # LWW's single sign-on (Entra) configuration
 } | set(target.get("keep") or [])
 
-dir = str(scriptDir.parent / "LWWAdmin")
+dir = str(runtimeTarget.scriptDir.parent / "LWWAdmin")
 
 mediaTypes = {
     "js": "text/javascript",
@@ -481,13 +422,21 @@ else:
 doDir(dir, CTF_FOLDER_ID)
 
 # The default page of /ctf can only point at index.html once that exists on
-# LWW, so it is set after the upload: once, when the folder doesn't have it yet.
+# LWW, so it is set after the upload: when the folder doesn't have it yet, or
+# doesn't run under CTF_PUBLIC_TRAN (any more). The name of the transaction
+# field in the GET response is taken from the request.
 if os.path.isfile(os.path.join(dir, "index.html")) and not args.dry_run:
     respget = MyRequests.get(f"/LWWAPI/Admin/folders/{CTF_FOLDER_ID}")
     checkResponse(respget)
 
-    if f'"{CTF_DEFAULT_PAGE_ID}"' not in respget.text:
-        print(f"Set the default page of /{CTF_FOLDER_NAME} to {CTF_DEFAULT_PAGE_ID}")
+    tran = re.search(r'"defaultTran"\s*:\s*"(\w*)"', respget.text)
+    if tran is None:
+        print(f"Can't tell the transaction of /{CTF_FOLDER_NAME} from: {respget.text[:200]}")
+    wrongTran = tran is not None and tran.group(1) != CTF_PUBLIC_TRAN
+
+    if f'"{CTF_DEFAULT_PAGE_ID}"' not in respget.text or wrongTran:
+        print(f"Set the default page of /{CTF_FOLDER_NAME} to {CTF_DEFAULT_PAGE_ID}, "
+              f"its transaction to {CTF_PUBLIC_TRAN}")
 
         data = {}
         data['folderId'] = CTF_FOLDER_ID

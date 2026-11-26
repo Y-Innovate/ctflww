@@ -1,6 +1,7 @@
-# Copy to runtimeTargets.yaml and fill in.
-# Run: python python/uploadLWW.py [target]     (--list shows the targets,
-# --dry-run shows what would change, --keep keeps files on LWW that aren't here)
+# Copy to runtimeTargets.yaml (gitignored) and fill in. Read by runtimeTarget.py.
+# Run: python python/processYAML.py [target], python python/uploadLWW.py [target]
+# (--list shows the targets; uploadLWW.py: --dry-run shows what would change,
+# --keep keeps files on LWW that aren't here)
 # The test scripts use it too: python python/testIterationN.py [--target <name>] ...
 # (the admin calls with the target's auth: entra, or password through POST /token)
 
