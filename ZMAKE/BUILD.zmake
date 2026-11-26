@@ -143,7 +143,10 @@ $(objasmtgts) : $(asmlib)($%)
 - CALL TOUCHMEM DATASET($(asmlstlib)($%))
 
 #* Compile COBOL DB2 source
-$(objcbldb2tgts) : $(cbllib)($%)
+#* Prereqs of the COBOL compiles include the copybooks the source
+#* uses, found by CPYDEPS (nested COPY and EXEC SQL INCLUDE included)
+$(objcbldb2tgts) : $(cbllib)($%) +
+    ${function CPYDEPS,$(cbldir)/$%.cbl $(cpydir) $(cpylib)}
 - CALL COBOL6 SYSIN($(cbllib)($%)) SYSLIN($(objlib)($%))+
 -             SYSLIB($(syslib_cbl)) SYSPRINT($(cbllstlib)($%))+
 -             SYSOPTF($(optlib)(DB2)) DBRMLIB($(dbrmlib)($%))+
@@ -153,7 +156,8 @@ $(objcbldb2tgts) : $(cbllib)($%)
 - CALL TOUCHMEM DATASET($(cbllstlib)($%))
 
 #* Compile COBOL CICS source
-$(objcblcicstgts) : $(cbllib)($%)
+$(objcblcicstgts) : $(cbllib)($%) +
+    ${function CPYDEPS,$(cbldir)/$%.cbl $(cpydir) $(cpylib)}
 - CALL COBOL6 SYSIN($(cbllib)($%)) SYSLIN($(objlib)($%))+
 -             SYSLIB($(syslib_cbl)) SYSPRINT($(cbllstlib)($%))+
 -             SYSOPTF($(optlib)(CICS)) PRINTSUCCESS(NO)
