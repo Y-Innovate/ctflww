@@ -1,0 +1,37 @@
+# What this repository puts on LWW, read by uploadLWW.py and processYAML.py
+# (through lwwApp.py). The same for every LWW server; a target in
+# runtimeTargets.yaml can overrule any field of "folder" and "api" with its
+# own "folder:" and "api:" (e.g. another folder ID, when that one is taken on
+# its server), and add files to "keep" with its own "keep:".
+
+# The local folder whose contents go into the LWW folder
+sourceDir: LWWAdmin
+
+# The folder in the root of LWW's file system
+folder:
+  id: CT000000
+  name: ctf
+  # /ctf itself runs under the public transaction CTFP; the route folders that
+  # need a player or admin set their own transaction and login redirect in
+  # their .name files, and so do the API paths (CTFP, CTFU, CTFA)
+  transaction: CTFP
+  # index.html of the web UI (ctflww-frontend), with this fixed ID in
+  # LWWAdmin/.index.html: the page /ctf/ shows
+  defaultPageId: CT000001
+  # Optional: the page LWW sends a request for the folder without a session
+  # to, with this fixed ID in its .name file (lwdeploy: redirect_to_login.html)
+  # loginRedirectId: CT000003
+
+# Files that live on LWW only and are never deleted by the upload, although
+# sourceDir doesn't have them: they hold settings that stay out of git. Paths
+# without a leading / are inside the folder.
+keep:
+  - sso_config.json   # LWW's single sign-on (Entra) configuration
+
+# The API that processYAML.py registers
+api:
+  # The spec, read on the LWW host from the target's remoteOASDir
+  yaml: ctf_1.0.0.yaml
+  # The paths of the spec are served under this prefix; by default
+  # /<folder.name>/API/v1, where the placeholders of sourceDir/API/v1 go
+  # pathPrefix: /ctf/API/v1

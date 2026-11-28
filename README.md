@@ -77,7 +77,14 @@ Browser ──► LWW (in CICS) ──► COBOL wrapper CTFCnnn ──► module
 full first-time setup; each later iteration lists what it adds. In short:
 
 1. Copy `envs/t01.yaml` for your environment and set your dataset names, DB2
-   subsystem, CICS names, RACF groups and userids.
+   subsystem, CICS names, RACF groups and userids. Values of your own site or
+   of yourself (your build libraries `BUILDHLQ`, the zmake libraries
+   `LWZMHLQ`, ...) can go in `envs/<env>.local.yaml` instead, which stays out
+   of git and replaces the values of `envs/<env>.yaml`. `build` and
+   `python/deploy.py` read their settings from there too
+   ([python/envConfig.py](python/envConfig.py)); both take `--dry-run` to
+   print the job instead of submitting it, and the environment from `--env`
+   or `$CTF_ENV` (default `t01`).
 2. Define the RACF groups and userids, render the DDL and JCL
    (`python python/deploy.py DEPLOY_DDL`), and run the DDL members in order.
 3. Build (`. ./setenv`, then `build`) and deploy (`python python/deploy.py`):
@@ -90,7 +97,10 @@ full first-time setup; each later iteration lists what it adds. In short:
 The scripts in `python/` that talk to LWW read their host and sign-in from
 `python/runtimeTargets.yaml`, which stays out of git: copy
 [runtimeTargets.example.yaml](python/runtimeTargets.example.yaml) and fill it
-in. Passwords are always asked for at run time.
+in. Passwords are always asked for at run time. Which LWW folder the web UI
+and API placeholders go to (`/ctf`, its ID, transaction and default page)
+and which API spec is registered under which path prefix is in
+[python/lwwApp.yaml](python/lwwApp.yaml); a target can overrule it.
 
 ## Testing
 

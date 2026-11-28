@@ -94,28 +94,28 @@ $(loadothtgts) : $(srcloadlib)($%)
 $(loadprvtgts) : $(srcloadlib)($%)
 - CALL IEBCOPY PDSIN($(srcloadlib)) PDSOUT($(tgtloadlib))+
 -              MEMBER($%) PRINTSUCCESS(NO)
-- CALL BIND SYSTEM(DBY1) PACKAGE(CTF$(ctfdb)) MEMBER($%)+
--           OWNER(CTF$(ctfdb)) QUALIFIER(CTF$(ctfdb))+
+- CALL BIND SYSTEM($(db2ssid)) PACKAGE($(pkgcollid)) MEMBER($%)+
+-           OWNER($(sqlid)) QUALIFIER($(schema))+
 -           LIBRARY('$(tgtdbrmlib)')+
 -           VALIDATE(BIND)
 
 $(loadpubtgts) : $(srcloadlib)($%)
 - CALL IEBCOPY PDSIN($(srcloadlib)) PDSOUT($(tgtloadlib))+
 -              MEMBER($%) PRINTSUCCESS(NO)
-- CALL BIND SYSTEM(DBY1) PACKAGE(CTF$(ctfdb)P) MEMBER($%)+
--           OWNER(CTF$(ctfdb)) QUALIFIER(CTF$(ctfdb))+
+- CALL BIND SYSTEM($(db2ssid)) PACKAGE($(pkgcollidp)) MEMBER($%)+
+-           OWNER($(sqlid)) QUALIFIER($(schema))+
 -           LIBRARY('$(tgtdbrmlib)')+
 -           VALIDATE(BIND)
 
 $(loadbothtgts) : $(srcloadlib)($%)
 - CALL IEBCOPY PDSIN($(srcloadlib)) PDSOUT($(tgtloadlib))+
 -              MEMBER($%) PRINTSUCCESS(NO)
-- CALL BIND SYSTEM(DBY1) PACKAGE(CTF$(ctfdb)) MEMBER($%)+
--           OWNER(CTF$(ctfdb)) QUALIFIER(CTF$(ctfdb))+
+- CALL BIND SYSTEM($(db2ssid)) PACKAGE($(pkgcollid)) MEMBER($%)+
+-           OWNER($(sqlid)) QUALIFIER($(schema))+
 -           LIBRARY('$(tgtdbrmlib)')+
 -           VALIDATE(BIND)
-- CALL BIND SYSTEM(DBY1) PACKAGE(CTF$(ctfdb)P) MEMBER($%)+
--           OWNER(CTF$(ctfdb)) QUALIFIER(CTF$(ctfdb))+
+- CALL BIND SYSTEM($(db2ssid)) PACKAGE($(pkgcollidp)) MEMBER($%)+
+-           OWNER($(sqlid)) QUALIFIER($(schema))+
 -           LIBRARY('$(tgtdbrmlib)')+
 -           VALIDATE(BIND)
 
